@@ -1,0 +1,84 @@
+configuration:
+  runtime: concord-v2
+  arguments:
+    puppetParams:
+      debug: true
+
+flows:
+  default:
+    - call: promptForAction
+    - log: "done"
+
+  promptForAction:
+    # Create Action Prompt Form
+    - set:
+        options:
+          - "Create API Token"
+          - "Execute PQL Query"
+          - "Exit"
+        fields:
+          - action: { type: "string", label: "What do you want to do?", "placeholder": "Choose action here", allow: "${options}", search: true}
+    - form: actionForm
+      fields: ${fields}
+    - switch: ${actionForm.action}
+      "Create API Token":
+        - log: "Creating an API token"
+        - call: createToken
+      "Execute PQL Query":
+        - log: "Executing PQL Query"
+        - call: executeQuery
+      "Exit":
+        - log: "Exiting..."
+        - exit
+
+
+  # Create an API Token
+  createToken:
+    - form: apiTokenForm  # get user info
+    - task: puppet        # create the token
+      in:
+        action: "createApiToken"
+        ignoreErrors: true
+        username: ${apiTokenForm.username}
+        password: ${apiTokenForm.password}
+        tokenLife: ${apiTokenForm.lifetime}
+        tokenLabel: ${apiTokenForm.label}
+        tokenDescription: ${apiTokenForm.description}
+      out: tokenResult
+    - if: ${tokenResult.ok}
+      then:
+        - log: "New api token: ${tokenResult.data}"
+      else:
+        - log: "Error creating api token: ${tokenResult.error}"
+
+
+  # execute a PQL query
+  executeQuery:
+    - form: queryForm   # get the query
+    - task: puppet      # execute it
+      in:
+        action: "pql"
+        ignoreErrors: true
+        queryString: ${queryForm.query}
+      out: queryResult
+    - if: ${queryResult.ok}
+      then:
+        # prove we got the results
+        - log: ${resource.prettyPrintJson(queryResult.data)}
+        # filter down to only the certname values
+        - set:
+            certnames: ${queryResult.data.stream().map(x -> x.get("certname")).toList()}
+        - log: "Only certnames: ${resource.prettyPrintJson(certnames)}"
+      else:
+        - log: "Error executing pql: ${queryResult.error}"
+
+forms:
+  apiTokenForm:
+    - username: { label: "Username", type: "string"}
+    - password: { label: "Password", type: "string", inputType: "password" }
+    - lifetime: { label: "Token Lifetime", type: "string", allow: ["10m", "1h", "1d", "1y"], value: "1h" }
+    - label: { label: "Token Label", type: "string?" }
+    - description: { label: "Token Description", type: "string?", value: "Created on ${datetime.current('yyyy-MM-dd HH:mm:ss')}" }
+
+  queryForm:
+    - query: { label: "Query String", type: "string", placeholder: "inventory{ limit 5 }" }

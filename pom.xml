@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.takari</groupId>
+        <artifactId>takari</artifactId>
+        <version>27</version>
+    </parent>
+
+    <groupId>com.walmartlabs.concord.plugins</groupId>
+    <artifactId>concord-plugins-parent</artifactId>
+    <version>1.44.1-SNAPSHOT</version>
+
+    <packaging>pom</packaging>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>team</id>
+            <name>Concord Development Team</name>
+            <roles>
+                <role>Project Lead</role>
+            </roles>
+            <timezone>-5</timezone>
+        </developer>
+    </developers>
+
+    <modules>
+        <module>tasks/akeyless</module>
+        <module>tasks/argocd</module>
+        <module>tasks/confluence</module>
+        <module>tasks/git</module>
+        <module>tasks/gremlin</module>
+        <module>tasks/hashivault</module>
+        <module>tasks/jenkins</module>
+        <module>tasks/jira</module>
+        <module>tasks/jsonpath</module>
+        <module>tasks/ldap</module>
+        <module>tasks/msteams</module>
+        <module>tasks/puppet</module>
+        <module>tasks/s3</module>
+        <module>tasks/terraform</module>
+        <module>tasks/xml</module>
+        <module>tasks/zoom</module>
+    </modules>
+
+    <properties>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <scm.connection>scm:git:https://github.com/walmartlabs/concord-plugins.git</scm.connection>
+
+        <concord.version>1.96.0</concord.version>
+        <wiremock.version>2.27.2</wiremock.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.walmartlabs.concord</groupId>
+                <artifactId>concord-targetplatform</artifactId>
+                <version>${concord.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.github.tomakehurst</groupId>
+                <artifactId>wiremock</artifactId>
+                <version>${wiremock.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>3.0.0-M6</version>
+                    <configuration>
+                        <indentSize>4</indentSize>
+                        <tagNameFormat>@{project.version}</tagNameFormat>
+                        <localCheckout>true</localCheckout>
+                        <autoVersionSubmodules>true</autoVersionSubmodules>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.eclipse.sisu</groupId>
+                    <artifactId>sisu-maven-plugin</artifactId>
+                    <version>0.3.5</version>
+                    <executions>
+                        <execution>
+                            <id>index</id>
+                            <goals>
+                                <goal>main-index</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.0.0-M7</version>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.junit.jupiter</groupId>
+                            <artifactId>junit-jupiter-engine</artifactId>
+                            <version>5.8.2</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
+        <plugins>
+            <plugin>
+                <groupId>io.takari.maven.plugins</groupId>
+                <artifactId>takari-lifecycle-plugin</artifactId>
+                <version>1.13.7</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <source>${maven.compiler.source}</source>
+                    <target>${maven.compiler.target}</target>
+                    <proc>proc</proc>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>1.14</version>
+                <executions>
+                    <execution>
+                        <id>first</id>
+                        <goals>
+                            <goal>update-file-header</goal>
+                        </goals>
+                        <phase>process-sources</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <verbose>false</verbose>
+                    <licenseName>apache_v2</licenseName>
+                    <organizationName>Walmart Inc., Concord Authors</organizationName>
+                    <projectName>Concord</projectName>
+                    <inceptionYear>2017</inceptionYear>
+                    <processStartTag>*****</processStartTag>
+                    <sectionDelimiter>-----</sectionDelimiter>
+                    <processEndTag>=====</processEndTag>
+                    <roots>
+                        <root>src/main/java</root>
+                        <root>src/test/java</root>
+                    </roots>
+                    <extraExtensions>
+                        <tsx>java</tsx>
+                    </extraExtensions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <scm>
+        <developerConnection>${scm.connection}</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
+</project>

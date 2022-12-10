@@ -1,0 +1,24 @@
+configuration:
+  runtime: "concord-v2"
+  dependencies:
+    - "mvn://com.walmartlabs.concord.plugins:terraform-task:%%version%%"
+
+flows:
+  default:
+    # regular run
+    - task: terraform
+      in:
+        action: plan
+
+    # custom $PWD
+    - task: terraform
+      in:
+        action: plan
+        pwd: mydir
+
+    # custom $PWD + [DIR]
+    - task: terraform
+      in:
+        action: plan
+        pwd: mydir
+        dir: nested
